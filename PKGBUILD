@@ -262,6 +262,8 @@ prepare() {
     fi
   fi
 
+  scripts/kconfig/merge_config.sh -m .config ../linux-surface/configs/surface-6.3.config
+
   make ${_compiler_flags} olddefconfig
 
   make -s kernelrelease > version
