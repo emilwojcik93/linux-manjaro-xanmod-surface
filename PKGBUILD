@@ -83,8 +83,8 @@ fi
 
 pkgbase=linux-manjaro-xanmod
 pkgname=("${pkgbase}" "${pkgbase}-headers")
-_major=6.2
-pkgver=${_major}.9
+_major=6.3
+pkgver=${_major}.5
 _branch=6.x
 xanmod=1
 pkgrel=1
@@ -92,7 +92,7 @@ pkgdesc='Linux Xanmod'
 url="http://www.xanmod.org/"
 arch=(x86_64)
 
-__commit="c3bc4697f00609370e0106589b0edfea9ccb37ff" # 6.2.9
+__commit="00ef030daa80b01c1e56f9ba20cf7c627d7c5791" # 6.3.5-2
 
 license=(GPL2)
 makedepends=(
@@ -109,7 +109,7 @@ source=("https://cdn.kernel.org/pub/linux/kernel/v${_branch}/linux-${_major}.tar
         "https://github.com/xanmod/linux/releases/download/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz"
         choose-gcc-optimization.sh
         "https://gitlab.manjaro.org/packages/core/linux${_major//.}/-/archive/${__commit}/linux${_major//.}-${__commit}.tar.gz"
-         "0012-cameras.patch::https://raw.githubusercontent.com/linux-surface/linux-surface/arch-6.2.10-1/patches/6.2/0012-cameras.patch")
+         "git+https://github.com/linux-surface/linux-surface.git")
         #"patch-${pkgver}-xanmod${xanmod}.xz::https://sourceforge.net/projects/xanmod/files/releases/stable/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz/download"
 
 # Archlinux patches
@@ -120,12 +120,12 @@ for _patch in ${_patches[@]}; do
     source+=("${_patch}::https://raw.githubusercontent.com/archlinux/svntogit-packages/${_commit}/trunk/${_patch}")
 done
         
-sha256sums=('74862fa8ab40edae85bb3385c0b71fe103288bce518526d63197800b3cbdecb1'  # kernel tar.xz
+sha256sums=('ba3491f5ed6bd270a370c440434e3d69085fcdd528922fa01e73d7657db73b1e'  # kernel tar.xz
             'SKIP'                                                              #        tar.sign
-            '8185c860bb07ea0939b9fa761ef677822c03e8667379e43606915c59ee383eca'  # xanmod
+            '81aec306b4bae742f3fa8fdc6ea156224d5fdf281d08382519d594c5826059d5'  # xanmod
             '5c84bfe7c1971354cff3f6b3f52bf33e7bbeec22f85d5e7bfde383b54c679d30'  # choose-gcc-optimization.sh
-            '4ac0c2fc6a83959b8e9cb347a62aad52808437d53400c8762662e82df0985694' # manjaro
-            'd9d481be20466e5679a387dc48ecba567179033201ab4d2b160f2f55ac959d3e') # 0012-cameras.patch
+            'c916ebd9d2553ce4452146c779804dd2e858c5cd267bb624c9f683e136e9edf7' # manjaro
+            'SKIP') # surface
 
 validpgpkeys=(
     'ABAF11C65A2970B130ABE3C479BE3E4300411886' # Linux Torvalds
@@ -144,7 +144,6 @@ prepare() {
   patch -Np1 -i ../patch-${pkgver}-xanmod${xanmod}
   
   msg2 "Setting version..."
-  scripts/setlocalversion --save-scmversion
   #echo "-$pkgrel" > localversion.10-pkgrel
   echo "-MANJARO" > localversion.20-pkgname
 
@@ -171,6 +170,11 @@ prepare() {
   done 
   git apply -p1 < "../linux${_major//.}-$__commit/0413-bootsplash.gitpatch"
   
+  # surface patches 
+  for p in ../linux-surface/patches/6.3/*; do
+      msg2 "Applying patch: $p"
+      patch -Np1 < $p
+  done
   
   # Applying configuration
   cp -vf CONFIGS/xanmod/gcc/${_config} .config
@@ -257,6 +261,8 @@ prepare() {
       exit 1
     fi
   fi
+
+  scripts/kconfig/merge_config.sh -m .config ../linux-surface/configs/surface-6.3.config
 
   make ${_compiler_flags} olddefconfig
 
