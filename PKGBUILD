@@ -81,23 +81,24 @@ fi
 ### IMPORTANT: Do no edit below this line unless you know what you're doing
 
 
-pkgbase=linux-manjaro-xanmod
+pkgbase=linux-manjaro-xanmod-surface
 pkgname=("${pkgbase}" "${pkgbase}-headers")
 _major=6.3
 pkgver=${_major}.5
 _branch=6.x
 xanmod=1
-pkgrel=1
-pkgdesc='Linux Xanmod'
+pkgrel=2
+pkgdesc='Linux Xanmod Surface'
 url="http://www.xanmod.org/"
 arch=(x86_64)
+surface_tag=arch-${pkgver}-1 # arch-6.3.5-1
 
 __commit="00ef030daa80b01c1e56f9ba20cf7c627d7c5791" # 6.3.5-2
 
 license=(GPL2)
 makedepends=(
-  xmlto kmod inetutils bc libelf cpio
-  python-sphinx python-sphinx_rtd_theme graphviz imagemagick git
+  xmlto kmod inetutils bc perl libelf cpio gettext tar xz
+  python python-sphinx python-sphinx_rtd_theme graphviz imagemagick git
 )
 if [ "${_compiler}" = "clang" ]; then
   makedepends+=(clang llvm lld python)
@@ -105,37 +106,35 @@ fi
 options=('!strip')
 _srcname="linux-${pkgver}-xanmod${xanmod}"
 
-source=("https://cdn.kernel.org/pub/linux/kernel/v${_branch}/linux-${_major}.tar."{xz,sign}
-        "https://github.com/xanmod/linux/releases/download/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz"
-        choose-gcc-optimization.sh
-        "https://gitlab.manjaro.org/packages/core/linux${_major//.}/-/archive/${__commit}/linux${_major//.}-${__commit}.tar.gz"
-         "git+https://github.com/linux-surface/linux-surface.git")
-        #"patch-${pkgver}-xanmod${xanmod}.xz::https://sourceforge.net/projects/xanmod/files/releases/stable/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz/download"
-
-# Archlinux patches
-_commit="ec9e9a4219fe221dec93fa16fddbe44a34933d8d"
-_patches=()
-for _patch in ${_patches[@]}; do
-    #source+=("${_patch}::https://git.archlinux.org/svntogit/packages.git/plain/trunk/${_patch}?h=packages/linux&id=${_commit}")
-    source+=("${_patch}::https://raw.githubusercontent.com/archlinux/svntogit-packages/${_commit}/trunk/${_patch}")
-done
+source=(
+    "https://cdn.kernel.org/pub/linux/kernel/v${_branch}/linux-${_major}.tar."{xz,sign}
+    "https://github.com/xanmod/linux/releases/download/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz"
+    choose-gcc-optimization.sh
+    "https://gitlab.manjaro.org/packages/core/linux${_major//.}/-/archive/${__commit}/linux${_major//.}-${__commit}.tar.gz"
+    "linux-surface::git+https://github.com/linux-surface/linux-surface.git"
+)
         
-sha256sums=('ba3491f5ed6bd270a370c440434e3d69085fcdd528922fa01e73d7657db73b1e'  # kernel tar.xz
-            'SKIP'                                                              #        tar.sign
-            '81aec306b4bae742f3fa8fdc6ea156224d5fdf281d08382519d594c5826059d5'  # xanmod
-            '5c84bfe7c1971354cff3f6b3f52bf33e7bbeec22f85d5e7bfde383b54c679d30'  # choose-gcc-optimization.sh
-            'c916ebd9d2553ce4452146c779804dd2e858c5cd267bb624c9f683e136e9edf7' # manjaro
-            'SKIP') # surface
-
+sha256sums=(
+    'ba3491f5ed6bd270a370c440434e3d69085fcdd528922fa01e73d7657db73b1e'  # kernel tar.xz
+    'SKIP'                                                              # tar.sign
+    '81aec306b4bae742f3fa8fdc6ea156224d5fdf281d08382519d594c5826059d5'  # xanmod
+    '5c84bfe7c1971354cff3f6b3f52bf33e7bbeec22f85d5e7bfde383b54c679d30'  # choose-gcc-optimization.sh
+    'c916ebd9d2553ce4452146c779804dd2e858c5cd267bb624c9f683e136e9edf7'  # manjaro
+    'SKIP'                                                              # surface
+)
 validpgpkeys=(
     'ABAF11C65A2970B130ABE3C479BE3E4300411886' # Linux Torvalds
     '647F28654894E3BD457199BE38DBBDC86092693E' # Greg Kroah-Hartman
-    'A2FF3A36AAA56654109064AB19802F8B0D70FC30'  # Jan Alexander Steffens (heftig)
+    'A2FF3A36AAA56654109064AB19802F8B0D70FC30' # Jan Alexander Steffens (heftig)
 )
 
 export KBUILD_BUILD_HOST=${KBUILD_BUILD_HOST:-archlinux}
 export KBUILD_BUILD_USER=${KBUILD_BUILD_USER:-makepkg}
 export KBUILD_BUILD_TIMESTAMP=${KBUILD_BUILD_TIMESTAMP:-$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})}
+
+# optional certificate and key for secure boot signing
+_mok_crt="$PWD/MOK.crt"
+_mok_key="$PWD/MOK.key"
 
 prepare() {
   cd linux-${_major}  
@@ -145,7 +144,7 @@ prepare() {
   
   msg2 "Setting version..."
   #echo "-$pkgrel" > localversion.10-pkgrel
-  echo "-MANJARO" > localversion.20-pkgname
+  echo "surface-MANJARO" > localversion.20-pkgname
 
   # Archlinux patches
   local src
@@ -171,7 +170,7 @@ prepare() {
   git apply -p1 < "../linux${_major//.}-$__commit/0413-bootsplash.gitpatch"
   
   # surface patches 
-  for p in ../linux-surface/patches/6.3/*; do
+  for p in ../linux-surface/patches/${_major}/*; do
       msg2 "Applying patch: $p"
       patch -Np1 < $p
   done
@@ -283,21 +282,33 @@ build() {
 }
 
 _package() {
-  pkgdesc="The Linux kernel and modules with Xanmod and Manjaro patches (Bootsplash support). Ashmem and binder are enabled"
+  pkgdesc="The Linux kernel and modules with Xanmod, Manjaro (Bootsplash support) and Surface patches. Ashmem and binder are enabled"
   depends=('coreutils' 'linux-firmware' 'kmod' 'initramfs')
   optdepends=('crda: to set the correct wireless channels of your country'
               'linux-firmware: firmware images needed for some devices'
-              'bootsplash-systemd: for bootsplash functionality')
+              'bootsplash-systemd: for bootsplash functionality'
+              'iptsd: Touchscreen support'
+              'linux-firmware: Firmware files for Linux'
+              'linux-firmware-marvell: Firmware files for Marvell WiFi / Bluetooth')
   provides=(VIRTUALBOX-GUEST-MODULES
             WIREGUARD-MODULE
             KSMBD-MODULE
             NTFS3-MODULE)
-  replaces=()
+  replaces=(
+    virtualbox-guest-modules-arch
+    wireguard-arch
+  )
   conflicts=()
 
   cd linux-${_major}
   local kernver="$(<version)"
   local modulesdir="$pkgdir/usr/lib/modules/$kernver"
+
+  # sign boot image if the prequisites are available
+  if [[ -f "$_mok_crt" ]] && [[ -f "$_mok_key" ]] && [[ -x "$(command -v sbsign)" ]]; then
+    echo "Signing boot image..."
+    sbsign --key "$_mok_key" --cert "$_mok_crt" --output "$image_name" "$image_name"
+  fi
 
   msg2 "Installing boot image..."
   # systemd expects to find the kernel here to allow hibernation
@@ -305,10 +316,10 @@ _package() {
   install -Dm644 "$(make -s image_name)" "$modulesdir/vmlinuz"
 
   # Used by mkinitcpio to name the kernel
-  echo "manjaro-xanmod" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
+  echo "manjaro-xanmod-surface" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
  
   # add kernel version
-  echo "${pkgver}-${pkgrel}-Manjaro-Xanmod x64" | install -Dm644 /dev/stdin "${pkgdir}/boot/${pkgbase}.kver"
+  echo "${pkgver}-${pkgrel}-Manjaro-Xanmod-Surface x64" | install -Dm644 /dev/stdin "${pkgdir}/boot/${pkgbase}.kver"
 
   msg2 "Installing modules..."
   make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 modules_install
