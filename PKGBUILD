@@ -144,7 +144,7 @@ prepare() {
   
   msg2 "Setting version..."
   #echo "-$pkgrel" > localversion.10-pkgrel
-  echo "surface-MANJARO" > localversion.20-pkgname
+  echo "-surface-MANJARO" > localversion.20-pkgname
 
   # Archlinux patches
   local src
