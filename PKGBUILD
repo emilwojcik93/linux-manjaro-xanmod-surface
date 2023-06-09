@@ -106,27 +106,22 @@ fi
 options=('!strip')
 _srcname="linux-${pkgver}-xanmod${xanmod}"
 
-source=(
-    "https://cdn.kernel.org/pub/linux/kernel/v${_branch}/linux-${_major}.tar."{xz,sign}
-    "https://github.com/xanmod/linux/releases/download/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz"
-    choose-gcc-optimization.sh
-    "https://gitlab.manjaro.org/packages/core/linux${_major//.}/-/archive/${__commit}/linux${_major//.}-${__commit}.tar.gz"
-    "linux-surface::git+https://github.com/linux-surface/linux-surface.git"
-)
+source=("https://cdn.kernel.org/pub/linux/kernel/v${_branch}/linux-${_major}.tar."{xz,sign}
+        "https://github.com/xanmod/linux/releases/download/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz"
+        "choose-gcc-optimization.sh"
+        "https://gitlab.manjaro.org/packages/core/linux${_major//.}/-/archive/${__commit}/linux${_major//.}-${__commit}.tar.gz"
+        "linux-surface::git+https://github.com/linux-surface/linux-surface.git")
         
-sha256sums=(
-    'ba3491f5ed6bd270a370c440434e3d69085fcdd528922fa01e73d7657db73b1e'  # kernel tar.xz
-    'SKIP'                                                              # tar.sign
-    '81aec306b4bae742f3fa8fdc6ea156224d5fdf281d08382519d594c5826059d5'  # xanmod
-    '5c84bfe7c1971354cff3f6b3f52bf33e7bbeec22f85d5e7bfde383b54c679d30'  # choose-gcc-optimization.sh
-    'c916ebd9d2553ce4452146c779804dd2e858c5cd267bb624c9f683e136e9edf7'  # manjaro
-    'SKIP'                                                              # surface
-)
-validpgpkeys=(
-    'ABAF11C65A2970B130ABE3C479BE3E4300411886' # Linux Torvalds
-    '647F28654894E3BD457199BE38DBBDC86092693E' # Greg Kroah-Hartman
-    'A2FF3A36AAA56654109064AB19802F8B0D70FC30' # Jan Alexander Steffens (heftig)
-)
+sha256sums=('ba3491f5ed6bd270a370c440434e3d69085fcdd528922fa01e73d7657db73b1e'
+            'SKIP'
+            '81aec306b4bae742f3fa8fdc6ea156224d5fdf281d08382519d594c5826059d5'
+            '5c84bfe7c1971354cff3f6b3f52bf33e7bbeec22f85d5e7bfde383b54c679d30'
+            'c916ebd9d2553ce4452146c779804dd2e858c5cd267bb624c9f683e136e9edf7'
+            'SKIP')
+
+validpgpkeys=('ABAF11C65A2970B130ABE3C479BE3E4300411886' # Linux Torvalds
+              '647F28654894E3BD457199BE38DBBDC86092693E' # Greg Kroah-Hartman
+              'A2FF3A36AAA56654109064AB19802F8B0D70FC30') # Jan Alexander Steffens (heftig)
 
 export KBUILD_BUILD_HOST=${KBUILD_BUILD_HOST:-archlinux}
 export KBUILD_BUILD_USER=${KBUILD_BUILD_USER:-makepkg}
