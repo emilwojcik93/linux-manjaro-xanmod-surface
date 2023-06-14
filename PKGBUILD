@@ -84,16 +84,15 @@ fi
 pkgbase=linux-manjaro-xanmod-surface
 pkgname=("${pkgbase}" "${pkgbase}-headers")
 _major=6.3
-pkgver=${_major}.5
+pkgver=${_major}.7
 _branch=6.x
 xanmod=1
-pkgrel=2
+pkgrel=1
 pkgdesc='Linux Xanmod Surface'
 url="http://www.xanmod.org/"
 arch=(x86_64)
-surface_tag=arch-${pkgver}-1 # arch-6.3.5-1
 
-__commit="00ef030daa80b01c1e56f9ba20cf7c627d7c5791" # 6.3.5-2
+__commit="9316d222a6d0b0401b6bf04d57aab84c232a28cf" # 6.3.7-1
 
 license=(GPL2)
 makedepends=(
@@ -110,13 +109,13 @@ source=("https://cdn.kernel.org/pub/linux/kernel/v${_branch}/linux-${_major}.tar
         "https://github.com/xanmod/linux/releases/download/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz"
         "choose-gcc-optimization.sh"
         "https://gitlab.manjaro.org/packages/core/linux${_major//.}/-/archive/${__commit}/linux${_major//.}-${__commit}.tar.gz"
-        "linux-surface::git+https://github.com/linux-surface/linux-surface.git")
+        "git+https://github.com/linux-surface/linux-surface.git")
         
 sha256sums=('ba3491f5ed6bd270a370c440434e3d69085fcdd528922fa01e73d7657db73b1e'
             'SKIP'
-            '81aec306b4bae742f3fa8fdc6ea156224d5fdf281d08382519d594c5826059d5'
+            '9cec6c03e14daf279ed1704e408009eda9b56d15e91855cf1e97da2e4cc38c21'
             '5c84bfe7c1971354cff3f6b3f52bf33e7bbeec22f85d5e7bfde383b54c679d30'
-            'c916ebd9d2553ce4452146c779804dd2e858c5cd267bb624c9f683e136e9edf7'
+            'cfc504a838b4a7804adcc6961435e58ed17fa821e74e6d79fda216f8679e263e'
             'SKIP')
 
 validpgpkeys=('ABAF11C65A2970B130ABE3C479BE3E4300411886' # Linux Torvalds
